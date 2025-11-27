@@ -8,7 +8,7 @@
 </head>
 <body>
     <header>
-        <h1>Conatactez-nous!</h1>
+        <h1>Contactez-nous!</h1>
         <p>Nous serions ravis d'avoir de vos nouvelles. Veuillez remplir le formulaire ci-dessous pour nous envoyer un message.</p>
     </header>
    <section class="contact-container">
