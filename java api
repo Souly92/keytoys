@@ -1,0 +1,236 @@
+
+const apiKey = "5071f96e28e0235a8c15ae6bc3d8f105"; 
+const content = document.getElementById("content");
+const status = document.getElementById("status");
+const loadMoreBtn = document.getElementById("load-more");
+const genresRow = document.getElementById("genres");
+const searchForm = document.getElementById("search-form");
+const searchInput = document.getElementById("search-input");
+const homeBtn = document.getElementById("homeBtn");
+
+let allMovies = [];      
+let visibleMovies = [];  
+let currentDisplayCount = 40; 
+const displayStep = 40;  
+
+const GENRES = [
+  { id: 28, name: "Action" },
+  { id: 27, name: "Horreur" },
+  { id: 35, name: "Comédie" },
+  { id: 878, name: "Science-Fiction" },
+  { id: 10749, name: "Romance" },
+  { id: 16, name: "Animation" },
+  { id: 53, name: "Thriller" },
+  { id: 80, name: "Crime" },
+  { id: 10751, name: "Famille" },
+  { id: 12, name: "Aventure" },
+  { id: 14, name: "Fantastique" }
+];
+
+function setStatus(text) { status.textContent = text || ""; }
+function clearGrid() { content.innerHTML = ""; }
+
+function createCard(movie) {
+  const title = movie.title || movie.name || "Untitled";
+  const poster = movie.poster_path ? `https://image.tmdb.org/t/p/w300${movie.poster_path}` : "https://via.placeholder.com/300x450?text=Pas+d'image";
+  const overview = movie.overview || "";
+  const date = movie.release_date || movie.first_air_date || "";
+  const vote = movie.vote_average ? movie.vote_average.toFixed(1) : "";
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "card";
+  wrapper.innerHTML = `
+    <img src="${poster}" alt="${escapeHtml(title)}" loading="lazy" />
+    <div class="card-body">
+      <h3>${escapeHtml(title)}</h3>
+      <p>${escapeHtml(truncate(overview, 130))}</p>
+      <div class="meta"><span>⭐ ${vote}</span><span>${escapeHtml(date)}</span></div>
+    </div>
+  `;
+  return wrapper;
+}
+
+function escapeHtml(s){ if(!s) return ""; return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function truncate(s,n){ if(!s) return ""; return s.length>n? s.slice(0,n-1)+"…": s; }
+
+async function fetchPopularPages(pages = 10) {
+  setStatus("Chargement des films populaires… (cela peut prendre quelques secondes)");
+  allMovies = [];
+  try {
+    for (let p = 1; p <= pages; p++) {
+      const res = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=fr-FR&page=${p}`);
+      if (!res.ok) throw new Error(`Erreur API page ${p} : ${res.status}`);
+      const json = await res.json();
+      if (json.results && json.results.length) {
+        allMovies = allMovies.concat(json.results);
+      }
+    }
+    setStatus(`Chargés ${allMovies.length} films populaires.`);
+    visibleMovies = allMovies.slice(); 
+    currentDisplayCount = Math.min(displayStep, visibleMovies.length);
+    renderGrid();
+  } catch (err) {
+    console.error(err);
+    setStatus("Erreur lors du chargement des films. Vérifie la console.");
+  }
+}
+
+async function fetchTrending() {
+  setStatus("Chargement des tendances...");
+  try {
+    const res = await fetch(`https://api.themoviedb.org/3/trending/movie/day?api_key=${apiKey}`);
+    if (!res.ok) throw new Error(res.statusText);
+    const json = await res.json();
+    visibleMovies = json.results || [];
+    currentDisplayCount = Math.min(displayStep, visibleMovies.length);
+    setStatus(`Tendances — ${visibleMovies.length} résultats`);
+    renderGrid();
+  } catch (err) {
+    console.error(err);
+    setStatus("Impossible de charger les tendances.");
+  }
+}
+
+async function fetchNowPlaying() {
+  setStatus("Chargement des sorties en salles...");
+  try {
+    const res = await fetch(`https://api.themoviedb.org/3/movie/now_playing?api_key=${apiKey}&language=fr-FR`);
+    if (!res.ok) throw new Error(res.statusText);
+    const json = await res.json();
+    visibleMovies = json.results || [];
+    currentDisplayCount = Math.min(displayStep, visibleMovies.length);
+    setStatus(`Sorties — ${visibleMovies.length} résultats`);
+    renderGrid();
+  } catch (err) {
+    console.error(err);
+    setStatus("Impossible de charger les sorties.");
+  }
+}
+
+async function fetchByGenre(genreId) {
+  setStatus(`Chargement du genre…`);
+  try {
+    const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${genreId}&language=fr-FR&sort_by=popularity.desc&page=1`);
+    if (!res.ok) throw new Error(res.statusText);
+    const json = await res.json();
+    visibleMovies = json.results || [];
+    currentDisplayCount = Math.min(displayStep, visibleMovies.length);
+    setStatus(`${visibleMovies.length} films trouvés pour ce genre`);
+    renderGrid();
+  } catch (err) {
+    console.error(err);
+    setStatus("Erreur lors du chargement du genre.");
+  }
+}
+
+async function doSearch(query) {
+  if (!query) return;
+  setStatus(`Recherche : "${query}"...`);
+  try {
+    const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&language=fr-FR&query=${encodeURIComponent(query)}&page=1`);
+    if (!res.ok) throw new Error(res.statusText);
+    const json = await res.json();
+    visibleMovies = (json.results || []).filter(it => it && (it.title || it.name));
+    currentDisplayCount = Math.min(displayStep, visibleMovies.length);
+    setStatus(`${visibleMovies.length} résultats pour "${query}"`);
+    renderGrid();
+  } catch (err) {
+    console.error(err);
+    setStatus("Erreur lors de la recherche.");
+  }
+}
+
+function renderGrid() {
+  clearGrid();
+  if (!visibleMovies || visibleMovies.length === 0) {
+    setStatus("Aucun film à afficher.");
+    return;
+  }
+  setStatus(`Affichage ${Math.min(currentDisplayCount, visibleMovies.length)} / ${visibleMovies.length}`);
+  const slice = visibleMovies.slice(0, currentDisplayCount);
+  slice.forEach(m => content.appendChild(createCardFromMovie(m)));
+}
+
+function createCardFromMovie(m) {
+  const card = document.createElement("div");
+  card.className = "card";
+  const title = m.title || m.name || "Untitled";
+  const poster = m.poster_path ? `https://image.tmdb.org/t/p/w300${m.poster_path}` : "https://via.placeholder.com/300x450?text=Pas+d'image";
+  const overview = m.overview || "";
+  const date = m.release_date || m.first_air_date || "";
+  const vote = m.vote_average ? m.vote_average.toFixed(1) : "";
+  card.innerHTML = `
+    <img src="${poster}" alt="${escapeHtml(title)}" loading="lazy"/>
+    <div class="card-body">
+      <h3>${escapeHtml(title)}</h3>
+      <p>${escapeHtml(truncate(overview,130))}</p>
+      <div class="meta"><span>⭐ ${vote}</span><span>${escapeHtml(date)}</span></div>
+    </div>
+  `;
+  return card;
+}
+
+function clearGrid(){ content.innerHTML = ""; }
+
+function buildGenresRow(){
+  genresRow.innerHTML = "";
+  const allBtn = document.createElement("button");
+  allBtn.className = "genre-btn active";
+  allBtn.textContent = "Tous";
+  allBtn.onclick = () => { visibleMovies = allMovies.slice(); currentDisplayCount = Math.min(displayStep, visibleMovies.length); deactiveGenres(); allBtn.classList.add("active"); renderGrid(); setStatus(`Tous — ${visibleMovies.length} films`); };
+  genresRow.appendChild(allBtn);
+
+  GENRES.forEach(g=>{
+    const b = document.createElement("button");
+    b.className = "genre-btn";
+    b.textContent = g.name;
+    b.onclick = () => {
+      deactiveGenres();
+      b.classList.add("active");
+      fetchByGenre(g.id);
+    };
+    genresRow.appendChild(b);
+  });
+}
+
+function deactiveGenres(){
+  const buttons = genresRow.querySelectorAll(".genre-btn");
+  buttons.forEach(btn => btn.classList.remove("active"));
+}
+
+
+loadMoreBtn.addEventListener("click", ()=>{
+  currentDisplayCount = Math.min(visibleMovies.length, currentDisplayCount + displayStep);
+  renderGrid();
+});
+
+searchForm.addEventListener("submit", (e)=>{
+  e.preventDefault();
+  const q = searchInput.value.trim();
+  if (!q) {
+    visibleMovies = allMovies.slice();
+    currentDisplayCount = Math.min(displayStep, visibleMovies.length);
+    renderGrid();
+    setStatus(`Tous — ${visibleMovies.length} films`);
+    return;
+  }
+  doSearch(q);
+});
+
+document.getElementById("btn-popular").addEventListener("click", ()=>{
+  visibleMovies = allMovies.slice();
+  currentDisplayCount = Math.min(displayStep, visibleMovies.length);
+  deactiveGenres(); genresRow.querySelector(".genre-btn").classList.add("active");
+  renderGrid(); setStatus(`Tous — ${visibleMovies.length} films`);
+});
+
+document.getElementById("btn-trending").addEventListener("click", ()=> fetchTrending());
+document.getElementById("btn-now").addEventListener("click", ()=> fetchNowPlaying());
+homeBtn.addEventListener("click", ()=> { visibleMovies = allMovies.slice(); currentDisplayCount = Math.min(displayStep, visibleMovies.length); renderGrid(); setStatus(`Tous — ${visibleMovies.length} films`); });
+
+async function init(){
+  buildGenresRow();
+  await fetchPopularPages(10); 
+}
+
+init();
