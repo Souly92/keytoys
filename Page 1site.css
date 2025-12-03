@@ -47,15 +47,15 @@ a{
     justify-content: center;
 }
 .container {
-  height: 20vh;                      /* Ocupa a tela inteira */
+  height: 20vh;                      
   display: flex;
-  flex-direction: row-reverse;             /* Botões um embaixo do outro */
-  justify-content: center;            /* Centro vertical */
-  align-items: center;                /* Centro horizontal */
-  gap: 20px;                          /* Espaço entre os botões */
+  flex-direction: row-reverse;             
+  justify-content: center;            
+  align-items: center;                
+  gap: 20px;                          
 }
 
-/* Estilo dos links disfarçados de botão */
+
 .fake-button {
   display: inline-block;
   padding: 12px 25px;
