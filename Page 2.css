@@ -3,13 +3,12 @@ body {
     padding: 0;
     font-family: "Arial", sans-serif;
 
-    /* 📌 Image de fond */
-    background-image: url("gros-plan-des-colores-fond-blanc_665346-161798.avif");
-    background-size: cover;        /* l’image prend tout l’écran */
-    background-position: center;   /* centrée */
-    background-repeat: no-repeat;  /* pas de répétition */
+    background-image: url("fond\ avec\ les\ dees\ page\ 2.jpg");
+    background-size: cover;        
+    background-position: center;   
+    background-repeat: no-repeat;  
     height:100vh;
-    background-attachment: fixed;  /* effet paralax léger */
+    background-attachment: fixed;  
     color: #333;
 }
 
@@ -80,13 +79,12 @@ body {
     padding: 0;
     font-family: "Arial", sans-serif;
 
-    /* 📌 Image de fond */
-    background-image: url("gros-plan-des-colores-fond-blanc_665346-161798.avif");
-    background-size: cover;        /* l’image prend tout l’écran */
-    background-position: center;   /* centrée */
-    background-repeat: no-repeat;  /* pas de répétition */
+    background-image: url("gros-plan-des-colores-fond-blanc_665346-23709.avif");
+    background-size: cover;        
+    background-position: center;   
+    background-repeat: no-repeat;  
     height:100vh;
-    background-attachment: fixed;  /* effet paralax léger */
+    background-attachment: fixed;  
     color: #333;
 }
 
@@ -153,3 +151,28 @@ header h1 {
         font-size: 40px; 
         color: #333;
 }
+
+.achat-btn {
+    text-align: center;
+    margin-top: -10px;   
+    margin-bottom: 30px; 
+}
+
+.fake-button {
+  display: inline-block;
+  padding: 12px 25px;
+  background-color: #4a6cf7;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 17px;
+  font-weight: 600;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+  transition: 0.25s ease;
+}
+
+.fake-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
