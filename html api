@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Films & Séries – Catalogue</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header>
+  <div class="brand" id="homeBtn">KEY TOYS</div>
+
+  <nav class="top-controls">
+    <div class="nav-left">
+      <button class="nav-btn" id="btn-popular">Accueil</button>
+      <button class="nav-btn" id="btn-trending">Tendances</button>
+      <button class="nav-btn" id="btn-now">Sorties</button>
+    </div>
+
+    <form id="search-form" class="search-form" role="search">
+      <input id="search-input" type="search" placeholder="Rechercher un film ou une série..." />
+      <button type="submit">Rechercher</button>
+    </form>
+  </nav>
+</header>
+
+<section class="genres" id="genres">
+  <!-- Boutons genres injectés par JS -->
+</section>
+
+<main>
+  <div id="status" class="status">Chargement des films…</div>
+  <div id="content" class="grid-container"></div>
+  <div id="load-more-wrap" class="load-more-wrap">
+    <button id="load-more" class="load-more-btn">Charger + (afficher plus)</button>
+  </div>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
